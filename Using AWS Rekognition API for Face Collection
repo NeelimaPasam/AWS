@@ -1,0 +1,20 @@
+import boto3
+
+rekognition = boto3.client('rekognition')
+
+def create_collection(collection_id):
+    response = rekognition.create_collection(CollectionId=collection_id)
+    print(f"Collection ARN: {response['CollectionArn']}")
+
+def add_faces_to_collection(collection_id, image_file):
+    with open(image_file, 'rb') as image:
+        response = rekognition.index_faces(
+            CollectionId=collection_id,
+            Image={'Bytes': image.read()},
+            DetectionAttributes=['ALL']
+        )
+    print(f"Indexed faces: {response['FaceRecords']}")
+
+# Replace with your collection ID and image file
+create_collection('my-face-collection')
+add_faces_to_collection('my-face-collection', 'face_image.jpg')
