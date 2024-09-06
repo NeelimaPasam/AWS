@@ -1,0 +1,34 @@
+import json
+import boto3
+
+def lambda_handler(event, context):
+    rekognition = boto3.client('rekognition')
+    s3 = boto3.client('s3')
+
+    # Extract the bucket name and image key from the event
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+
+    # Call Rekognition to detect faces
+    response = rekognition.detect_faces(
+        Image={
+            'S3Object': {
+                'Bucket': bucket,
+                'Name': key
+            }
+        },
+        Attributes=['ALL']
+    )
+
+    # Process the response from Rekognition
+    faces = response['FaceDetails']
+    print(f"Detected {len(faces)} face(s) in {key}")
+
+    for face in faces:
+        print(f"Confidence: {face['Confidence']:.2f}%")
+        print(f"Emotions: {[emotion['Type'] for emotion in face['Emotions']]}")
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(f"Faces detected in {key}")
+    }
